@@ -24,7 +24,6 @@ jobs:
       - name: build
         uses: openwrt/gh-action-sdk@main
         env:
-          # Format resmi yang didukung SDK: nama_arsitektur-versi_branch
           ARCH: ${{ matrix.arch }}-${{ matrix.branch }}
           FEEDNAME: nikki
           PACKAGES: mihomo-alpha mihomo-meta nikki luci-app-nikki
