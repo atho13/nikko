@@ -34,21 +34,17 @@ jobs:
           KEY_BUILD: ${{ secrets.KEY_BUILD }}
           PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
           NO_REFRESH_CHECK: true
-          # SOLUSI 1: Menyuntikkan perintah penghapus debug symbols langsung ke compiler Go global
           GO_LDFLAGS: "-s -w"
 
-      # SOLUSI 2: Mengompres binari asli secara langsung di direktori build SDK sebelum di-tar.gz
       - name: Force Strip & Compress Mihomo Core (UPX Mod)
         run: |
           sudo apt-get update && sudo apt-get install -y upx-ucl tree
           
-          # Masuk ke folder paket hasil compile
           cd bin/packages/${{ matrix.arch }}/nikki || exit 1
           
           echo "=== Menjalankan pemeriksaan struktur file ==="
           tree -F . || true
           
-          # Kompres semua file biner mentah mihomo yang ada di folder kompilasi (jika ada)
           find . -type f -name "mihomo*" -not -name "*.ipk" -not -name "*.apk" -not -name "*.tar.gz" -exec sh -c '
             for bin; do
               echo "Memotong debug symbols dan memeras biner asli: $bin"
