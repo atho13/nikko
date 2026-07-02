@@ -1,4 +1,4 @@
-name: release-packages
+name: Frdmx Wrt Build & Releases
 
 on:
   workflow_dispatch:
@@ -22,7 +22,7 @@ jobs:
           - openwrt-25.12
     steps:
       - name: checkout
-        uses: actions/checkout@v4 # Diperbaiki ke v4 yang stabil
+        uses: actions/checkout@v4
 
       - name: build
         uses: openwrt/gh-action-sdk@main
@@ -34,11 +34,8 @@ jobs:
           KEY_BUILD: ${{ secrets.KEY_BUILD }}
           PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
           NO_REFRESH_CHECK: true
-          # SUNTIKAN OPTIMASI: Menghapus debug symbols bawaan Go agar core Mihomo muat di router kecil
-          # Semua protokol (Trojan, VLESS, VMess, TUIC, Hysteria) tetap aktif sepenuhnya!
           EXTRA_GOFLAGS: "-tags=nodocker,nosmuggling,noprofile -ldflags='-s -w'"
 
-      # Mengompres file biner inti Go di folder build menggunakan UPX sebelum dikemas menjadi arsip .tar.gz
       - name: Compress Mihomo Core via UPX
         run: |
           sudo apt-get update && sudo apt-get install -y upx-ucl tree
