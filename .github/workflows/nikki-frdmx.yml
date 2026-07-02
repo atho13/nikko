@@ -28,7 +28,7 @@ jobs:
           FEEDNAME: nikki
           PACKAGES: mihomo-alpha mihomo-meta nikki luci-app-nikki
           NO_REFRESH_CHECK: true
-          EXTRA_GOFLAGS: "-tags=nodocker,notuic,nohysteria,nosmuggling,noprofile -ldflags='-s -w'"
+          EXTRA_GOFLAGS: "-tags=nodocker,nosmuggling,noprofile -ldflags='-s -w'"
 
       - name: Compress Binaries via UPX
         run: |
