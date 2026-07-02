@@ -1,0 +1,42 @@
+name: frdmx-build
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: ${{ matrix.arch }}-${{ matrix.branch }} build
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        arch:
+          - aarch64_generic
+          - x86_64
+        branch:
+          - openwrt-24.10
+          - openwrt-25.12
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: build
+        uses: openwrt/gh-action-sdk@main
+        env:
+          ARCH: ${{ matrix.arch }}-${{ matrix.branch }}
+          FEEDNAME: nikki
+          PACKAGES: mihomo-alpha mihomo-meta nikki luci-app-nikki
+          NO_REFRESH_CHECK: true
+          EXTRA_GOFLAGS: "-tags=nodocker,notuic,nohysteria,nosmuggling,noprofile -ldflags='-s -w'"
+
+      - name: Compress Binaries via UPX
+        run: |
+          sudo apt-get update && sudo apt-get install -y upx-ucl
+          find bin/packages/ -type f -name "mihomo*" -exec upx --ultra --brute {} \; || true
+
+      - name: upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: nikki_${{ matrix.arch }}-${{ matrix.branch }}
+          path: bin/packages/${{ matrix.arch }}/nikki
