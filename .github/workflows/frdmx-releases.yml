@@ -34,50 +34,28 @@ jobs:
           KEY_BUILD: ${{ secrets.KEY_BUILD }}
           PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
           NO_REFRESH_CHECK: true
+          # SOLUSI 1: Menyuntikkan perintah penghapus debug symbols langsung ke compiler Go global
+          GO_LDFLAGS: "-s -w"
 
-      - name: Force Strip & Compress Mihomo Core (IPK & APK Mod)
+      # SOLUSI 2: Mengompres binari asli secara langsung di direktori build SDK sebelum di-tar.gz
+      - name: Force Strip & Compress Mihomo Core (UPX Mod)
         run: |
           sudo apt-get update && sudo apt-get install -y upx-ucl tree
           
+          # Masuk ke folder paket hasil compile
           cd bin/packages/${{ matrix.arch }}/nikki || exit 1
           
-          for file in mihomo*.ipk; do
-            [ -f "$file" ] || continue
-            echo "Memproses kompresi kustom IPK: $file"
-            mkdir -p tmp_extract
-            tar -xf "$file" -C tmp_extract
-            if [ -f tmp_extract/data.tar.gz ]; then
-              tar -xf tmp_extract/data.tar.gz -C tmp_extract
-              bin_file=$(find tmp_extract/usr/bin/ -type f -name "mihomo*" 2>/dev/null)
-              if [ -f "$bin_file" ]; then
-                strip -s "$bin_file" || true
-                upx --ultra --brute "$bin_file" || true
-                rm -f tmp_extract/data.tar.gz
-                cd tmp_extract && tar -czf data.tar.gz usr/ && cd ..
-                rm -f "$file"
-                cd tmp_extract && tar -czf "../$file" debian-binary control.tar.gz data.tar.gz && cd ..
-              fi
-            fi
-            rm -rf tmp_extract
-          done
-
-          for file in mihomo*.apk; do
-            [ -f "$file" ] || continue
-            echo "Memproses kompresi kustom APK: $file"
-            mkdir -p tmp_extract_apk
-            # APK OpenWrt adalah arsip tar yang dikompres dengan gzip atau zstd
-            tar -xf "$file" -C tmp_extract_apk
-            bin_file=$(find tmp_extract_apk/usr/bin/ -type f -name "mihomo*" 2>/dev/null)
-            if [ -f "$bin_file" ]; then
-              echo "Biner Mihomo APK ditemukan! Memotong simbol debug & mengompres..."
-              strip -s "$bin_file" || true
-              upx --ultra --brute "$bin_file" || true
-              # Bungkus ulang struktur APK OpenWrt asli
-              rm -f "$file"
-              cd tmp_extract_apk && tar -czf "../$file" . && cd ..
-            fi
-            rm -rf tmp_extract_apk
-          done
+          echo "=== Menjalankan pemeriksaan struktur file ==="
+          tree -F . || true
+          
+          # Kompres semua file biner mentah mihomo yang ada di folder kompilasi (jika ada)
+          find . -type f -name "mihomo*" -not -name "*.ipk" -not -name "*.apk" -not -name "*.tar.gz" -exec sh -c '
+            for bin; do
+              echo "Memotong debug symbols dan memeras biner asli: $bin"
+              strip -s "$bin" || true
+              upx --ultra --brute "$bin" || true
+            done
+          ' _ {} + || true
           
           cd ../../../..
 
