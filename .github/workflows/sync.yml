@@ -1,4 +1,4 @@
-name: Sync Branch from Upstream
+name: Sync Branch
 
 on:
   workflow_dispatch:
