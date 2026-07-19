@@ -1,0 +1,42 @@
+name: Sync Branch from Upstream
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        branch:
+          - dependabot/mihomo-meta
+          - dependabot/mihomo-alpha
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.PAT_TOKEN }}
+
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Add upstream remote
+        run: git remote add upstream https://github.com/nikkinikki-org/OpenWrt-nikki.git
+
+      - name: Fetch branch from upstream
+        run: git fetch upstream "${{ matrix.branch }}"
+
+      - name: Checkout branch locally
+        run: git checkout -B "${{ matrix.branch }}" "upstream/${{ matrix.branch }}"
+
+      - name: Push branch to fork
+        run: |
+          git remote set-url origin https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/Yogxx/OpenWrt-nikkiku.git
+          git push origin "${{ matrix.branch }}" --force
