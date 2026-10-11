@@ -11,6 +11,8 @@ jobs:
       fail-fast: false
       matrix:
         arch:
+          - aarch64_generic
+          - x86_64
           #- arm_cortex-a5_vfpv4
           #- arm_cortex-a7_neon-vfpv4
           #- arm_cortex-a8_vfpv3
@@ -21,7 +23,6 @@ jobs:
           #- aarch64_cortex-a53
           #- aarch64_cortex-a72
           #- aarch64_cortex-a76
-          - aarch64_generic
           #- mips_24kc
           #- mips_4kec
           #- mips_mips32
@@ -34,7 +35,6 @@ jobs:
           #- riscv64_generic
           #- loongarch64_generic
           #- i386_pentium4
-          - x86_64
         branch:
           - openwrt-24.10
           - openwrt-25.12
