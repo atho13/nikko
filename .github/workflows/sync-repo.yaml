@@ -1,0 +1,49 @@
+name: Sync Fork from Upstream
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'   # tiap 6 jam
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+env:
+  UPSTREAM_REPO: https://github.com/nikkinikki-org/OpenWrt-nikki.git
+  UPSTREAM_BRANCH: main
+  BUILD_WORKFLOW: build.yml
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout fork
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Sync from upstream
+        id: sync
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git remote add upstream "$UPSTREAM_REPO"
+          git fetch upstream "$UPSTREAM_BRANCH"
+
+          if git merge-base --is-ancestor "upstream/$UPSTREAM_BRANCH" HEAD; then
+            echo "Already up to date"
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          git merge "upstream/$UPSTREAM_BRANCH" --no-edit
+          git push origin "HEAD:${GITHUB_REF_NAME}"
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Trigger build
+        if: steps.sync.outputs.changed == 'true'
+        run: gh workflow run "$BUILD_WORKFLOW" --ref "$GITHUB_REF_NAME"
+        env:
+          GH_TOKEN: ${{ github.token }}
