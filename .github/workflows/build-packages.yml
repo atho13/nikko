@@ -18,7 +18,7 @@ jobs:
           #- arm_cortex-a9_vfpv3-d16
           #- arm_cortex-a9_neon
           #- arm_cortex-a15_neon-vfpv4
-          - aarch64_cortex-a53
+          #- aarch64_cortex-a53
           #- aarch64_cortex-a72
           #- aarch64_cortex-a76
           - aarch64_generic
@@ -33,12 +33,12 @@ jobs:
           #- riscv64_riscv64
           #- riscv64_generic
           #- loongarch64_generic
-          - i386_pentium4
+          #- i386_pentium4
           - x86_64
         branch:
           - openwrt-24.10
           - openwrt-25.12
-          - SNAPSHOT
+          #- SNAPSHOT
         #exclude:
           #- arch: mips_4kec
             #branch: openwrt-25.12
